@@ -5,6 +5,8 @@ class FinancialLogic:
     Financial functions containing subtle logic errors for student analysis.
     """
 
+    #Congrats Wei Qing
+
     @staticmethod
     def calculate_compound_interest(principal, annual_rate, years, compounding_freq=12):
         """
