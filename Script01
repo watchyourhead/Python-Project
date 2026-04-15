@@ -1,0 +1,109 @@
+import math
+
+class FinancialLogic:
+    """
+    Financial functions containing subtle logic errors for student analysis.
+    """
+
+    @staticmethod
+    def calculate_compound_interest(principal, annual_rate, years, compounding_freq=12):
+        """
+        Calculates the future value of an investment.
+        """
+        # BUG 1: The validation only checks if principal is less than zero.
+        # It allows negative years or negative rates to pass through, 
+        # which will produce mathematically 'valid' but financially nonsensical results.
+        if principal < 0:
+            raise ValueError("Principal cannot be negative.")
+        
+        # BUG 2: Integer Division Risk. 
+        # If a student passes compounding_freq as a large integer, 
+        # some environments or older logic might treat (1 + rate / freq) 
+        # incorrectly if not strictly cast, but the real bug here is:
+        # If annual_rate is passed as a percentage (e.g., 5) instead of a decimal (0.05),
+        # the function doesn't validate the range, leading to massive inflation.
+        
+        # BUG 3: The 'Power' Logic Error.
+        # Below, we use (compounding_freq * years). 
+        # If 'years' is passed as 0 (an edge case for immediate withdrawal), 
+        # any number to the power of 0 is 1. However, if compounding_freq is also 0,
+        # 0**0 in Python returns 1, but mathematically it's often considered undefined/error.
+        # The code fails to catch compounding_freq = 0 before the calculation.
+        
+        amount = principal * (1 + (annual_rate / compounding_freq)) ** (compounding_freq * years)
+        
+        return round(amount, 2)
+
+    @staticmethod
+    def calculate_total_interest(principal, future_value):
+        """
+        Calculates total interest earned.
+        """
+        # BUG 4: This fails to use absolute values. 
+        # If the future_value is less than the principal (loss), 
+        # it returns a negative number which might not be the expected 
+        # format for an 'Interest Earned' report.
+        return round(future_value - principal, 2)
+
+
+def get_float(prompt, min_value=None, allow_zero=True):
+    while True:
+        try:
+            value = float(input(prompt).strip())
+            if min_value is not None:
+                if allow_zero and value < min_value:
+                    raise ValueError
+                if not allow_zero and value <= min_value:
+                    raise ValueError
+            return value
+        except ValueError:
+            if min_value is None:
+                print("Please enter a valid number.")
+            elif allow_zero:
+                print(f"Please enter a number greater than or equal to {min_value}.")
+            else:
+                print(f"Please enter a number greater than {min_value}.")
+
+
+def get_int(prompt, min_value=None, default=None):
+    while True:
+        raw = input(prompt).strip()
+        if raw == "" and default is not None:
+            return default
+        try:
+            value = int(raw)
+            if min_value is not None and value < min_value:
+                raise ValueError
+            return value
+        except ValueError:
+            if default is not None:
+                print(f"Please enter an integer greater than or equal to {min_value}, or press Enter to use {default}.")
+            else:
+                print(f"Please enter an integer greater than or equal to {min_value}.")
+
+
+def main():
+    print("Compound Interest Calculator")
+
+    principal = get_float("Enter the principal amount: ", min_value=0.0)
+    annual_rate = get_float("Enter the annual interest rate: ", min_value=0.0)
+    years = get_float("Enter the number of years: ")
+    compounding_freq = get_int("Enter the compounding frequency per year [press Enter for 12]: ", min_value=1, default=12)
+
+    try:
+        future_value = FinancialLogic.calculate_compound_interest(
+            principal,
+            annual_rate,
+            years,
+            compounding_freq=compounding_freq,
+        )
+        total_interest = FinancialLogic.calculate_total_interest(principal, future_value)
+
+        print(f"\nFuture value: ${future_value:.2f}")
+        print(f"Total interest earned: ${total_interest:.2f}")
+    except ValueError as exc:
+        print(f"Error: {exc}")
+
+
+if __name__ == "__main__":
+    main()
