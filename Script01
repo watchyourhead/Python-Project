@@ -10,25 +10,8 @@ class FinancialLogic:
         """
         Calculates the future value of an investment.
         """
-        # BUG 1: The validation only checks if principal is less than zero.
-        # It allows negative years or negative rates to pass through, 
-        # which will produce mathematically 'valid' but financially nonsensical results.
         if principal < 0:
             raise ValueError("Principal cannot be negative.")
-        
-        # BUG 2: Integer Division Risk. 
-        # If a student passes compounding_freq as a large integer, 
-        # some environments or older logic might treat (1 + rate / freq) 
-        # incorrectly if not strictly cast, but the real bug here is:
-        # If annual_rate is passed as a percentage (e.g., 5) instead of a decimal (0.05),
-        # the function doesn't validate the range, leading to massive inflation.
-        
-        # BUG 3: The 'Power' Logic Error.
-        # Below, we use (compounding_freq * years). 
-        # If 'years' is passed as 0 (an edge case for immediate withdrawal), 
-        # any number to the power of 0 is 1. However, if compounding_freq is also 0,
-        # 0**0 in Python returns 1, but mathematically it's often considered undefined/error.
-        # The code fails to catch compounding_freq = 0 before the calculation.
         
         amount = principal * (1 + (annual_rate / compounding_freq)) ** (compounding_freq * years)
         
@@ -39,10 +22,6 @@ class FinancialLogic:
         """
         Calculates total interest earned.
         """
-        # BUG 4: This fails to use absolute values. 
-        # If the future_value is less than the principal (loss), 
-        # it returns a negative number which might not be the expected 
-        # format for an 'Interest Earned' report.
         return round(future_value - principal, 2)
 
 
